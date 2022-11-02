@@ -1,9 +1,7 @@
 <project>
-  <modelVersion>1.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
  
-  <groupId>GrupoQA_1</groupId>
-  <artifactId>Calculado_QA</artifactId>
+  <groupId>com.GrupoQA.app</groupId>
+  <artifactId>Calculador_QA</artifactId>
   <version>1</version>
-  <packaging>pom</packaging>
- 
 </project>
