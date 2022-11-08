@@ -1,66 +1,114 @@
-pipeline {
-  agent any
- parameters {
-        string(name: 'name_container', defaultValue: 'proyecto-qa', description: 'nombre del docker')
-        string(name: 'name_imagen', defaultValue: 'iproyecto-qa', description: 'nombre de la imagen')
-        string(name: 'tag_imagen', defaultValue: 'latest', description: 'etiqueta de la imagen')
-        string(name: 'puerto_imagen', defaultValue: '81', description: 'puerto a publicar')
-    }
-    environment {
-        DOCKERHUB_CREDENTIALS=credentials('dockerhub')
-        name_final = "${name_container}${tag_imagen}${puerto_imagen}"        
-    }
-    stages {
-	        stage('gitclone') {
+// pipeline {
+//   agent any
+//  parameters {
+//         string(name: 'name_container', defaultValue: 'proyecto-qa', description: 'nombre del docker')
+//         string(name: 'name_imagen', defaultValue: 'iproyecto-qa', description: 'nombre de la imagen')
+//         string(name: 'tag_imagen', defaultValue: 'latest', description: 'etiqueta de la imagen')
+//         string(name: 'puerto_imagen', defaultValue: '81', description: 'puerto a publicar')
+//     }
+//     environment {
+//         DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+//         name_final = "${name_container}${tag_imagen}${puerto_imagen}"        
+//     }
+//     stages {
+// 	        stage('gitclone') {
 
-			steps {
-				git 'https://github.com/luas16/Calculadora_QA.git'
-			     }
-		    }
+// 			steps {
+// 				git 'https://github.com/luas16/Calculadora_QA.git'
+// 			     }
+// 		    }
 		    
-        //   stage('stop/rm') {
+//         //   stage('stop/rm') {
 
-        //     when {
-        //         expression { 
-        //             DOCKER_EXIST = sh(returnStdout: true, script: 'echo "$(docker ps -q --filter name=${name_final})"').trim()
-        //             return  DOCKER_EXIST != '' 
-        //         }
-        //     }
-        //     steps {
-        //         script{
-        //             sh ''' 
-        //                  docker stop ${name_final}
-        //             '''
-        //             }
+//         //     when {
+//         //         expression { 
+//         //             DOCKER_EXIST = sh(returnStdout: true, script: 'echo "$(docker ps -q --filter name=${name_final})"').trim()
+//         //             return  DOCKER_EXIST != '' 
+//         //         }
+//         //     }
+//         //     steps {
+//         //         script{
+//         //             sh ''' 
+//         //                  docker stop ${name_final}
+//         //             '''
+//         //             }
                     
-        //         }                    
+//         //         }                    
                                   
-        //     }
+//         //     }
            
-        stage('build') {
-            steps {
-                script{
-                    sh ''' 
-                    docker build -t thetips4you/nodeapp_test:latest .
-                    '''
-                    }
+//         stage('build') {
+//             steps {
+//                 script{
+//                     sh ''' 
+//                     docker build -t thetips4you/nodeapp_test:latest .
+//                     '''
+//                     }
                     
-                }                    
+//                 }                    
                                   
-            }
-            stage('run') {
-            steps {
-                script{
-                    sh ''' 
-                        docker run -dp ${puerto_imagen}:80 --name ${name_final} ${name_imagen}:${tag_imagen}
+//             }
+//             stage('run') {
+//             steps {
+//                 script{
+//                     sh ''' 
+//                         docker run -dp ${puerto_imagen}:80 --name ${name_final} ${name_imagen}:${tag_imagen}
  
-                    '''
-                    }
+//                     '''
+//                     }
                     
-                }                    
+//                 }                    
                                   
-            }
+//             }
             
           
-        }   
-    }
+//         }   
+//     }
+
+
+pipeline{
+
+	agent any
+
+	environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
+
+	stages {
+	    
+	    stage('gitclone') {
+
+			steps {
+				git 'https://github.com/shazforiot/nodeapp_test.git'
+			}
+		}
+
+		stage('Build') {
+
+			steps {
+				sh 'docker build -t thetips4you/nodeapp_test:latest .'
+			}
+		}
+
+		stage('Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+
+		stage('Push') {
+
+			steps {
+				sh 'docker push thetips4you/nodeapp_test:latest'
+			}
+		}
+	}
+
+	post {
+		always {
+			sh 'docker logout'
+		}
+	}
+
+}
